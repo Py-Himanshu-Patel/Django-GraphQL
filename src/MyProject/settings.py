@@ -130,6 +130,6 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-GRAPHENE = {
-    'SCHEMA': 'app.schema.schema' # Where your Graphene schema lives
-}
+# GRAPHENE = {
+#     'SCHEMA': 'app.schema.schema' # Where your Graphene schema lives
+# }
