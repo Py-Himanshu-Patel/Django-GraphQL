@@ -32,7 +32,13 @@ class Query(graphene.ObjectType):
 	# 	return "Dummy Text"
 
 	all_quizzes = DjangoListField(QuizzesType)
-	 
+	all_questions = DjangoListField(QuestionType)
+
+	def resolve_all_quizzes(root, info):
+		return Quiz.objects.all()
+
+	def resolve_all_questions(root, info):
+		return Question.objects.all()
 
 
 schema = graphene.Schema(query=Query)

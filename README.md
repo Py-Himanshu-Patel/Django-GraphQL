@@ -174,3 +174,106 @@ Response is also same
 ```json
 {"data":{"allBooks":[{"id":"1","title":"7 Habit of Highly Non Effective People"},{"id":"2","title":"Django Mens"},{"id":"3","title":"React Boys"}]}}
 ```
+
+### Making even more comples queries
+
+#### Make models
+
+[models.py](src/Quiz/models.py)
+
+```python
+# quiz/models.py
+
+class Category(models.Model):
+    ...
+
+class Quiz(models.Model):
+    ...
+
+class Question(models.Model):
+    ...
+
+class Answer(models.Model):
+    ...
+```
+
+#### Make schema
+
+[schema.py](src/Quiz/schema.py)
+
+```python
+import graphene
+from graphene_django import DjangoObjectType, DjangoListField
+from .models import Category, Question, Answer, Quiz
+
+
+class CategoryType(DjangoObjectType):
+    ...
+
+class QuizzesType(DjangoObjectType):
+    ...
+
+class QuestionType(DjangoObjectType):
+    ...
+
+class AnswerType(DjangoObjectType):
+    ...
+
+# define query root which will be searched for each graphQL query
+class Query(graphene.ObjectType):
+    # DjangoListField give list of all objects in model
+    all_quizzes = DjangoListField(QuizzesType)
+    all_questions = DjangoListField(QuestionType)
+
+    # can be used to further refine DjangoListField output
+    def resolve_all_quizzes(root, info):
+        return Quiz.objects.all()
+
+    def resolve_all_questions(root, info):
+        return Question.objects.all()
+
+schema = graphene.Schema(query=Query)
+```
+
+#### Make query and get response
+
+##### Query
+
+```json
+query{
+  allQuizzes {
+    title
+  }
+  
+  allQuestions{
+    title
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "data": {
+    "allQuizzes": [
+      {
+        "title": "First Quiz"
+      },
+      {
+        "title": "Second Quiz"
+      },
+      {
+        "title": "Third Quiz"
+      }
+    ],
+    "allQuestions": [
+      {
+        "title": "Is Spring the most famous framework?"
+      }
+    ]
+  }
+}
+```
+
+We can request only those field which are declared in `QuizzesType` and `QuestionType`.
