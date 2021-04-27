@@ -220,6 +220,7 @@ class AnswerType(DjangoObjectType):
     ...
 
 # define query root which will be searched for each graphQL query
+# to make a get query on already existing data in server
 class Query(graphene.ObjectType):
     # DjangoListField give list of all objects in model
     all_quizzes = DjangoListField(QuizzesType)
@@ -282,6 +283,8 @@ We can request only those field which are declared in `QuizzesType` and `Questio
 
 ```python
 # Quiz/schema.py
+
+# to make a get query on already existing data in server
 class Query(graphene.ObjectType):
     # returns all objects in models
     # all_quizzes = DjangoListField(QuizzesType)
@@ -335,6 +338,7 @@ Notice the use of `quizId` and `quesId` in query.
 #### Modify schema to get answers related to a particular question
 
 ```python
+# to make a get query on already existing data in server
 class Query(graphene.ObjectType):
     # get the request question and all it's answers
     get_all_answers = graphene.List(AnswerType, ques_id=graphene.Int())
@@ -389,6 +393,72 @@ OR using variables
         "answerText": "As usual. It Depends"
       }
     ]
+  }
+}
+```
+
+### GraphQL CRUD with Django
+
+#### Modify or Create a instance in database
+
+Add this class in schema.py.
+
+```python
+...
+
+class CategoryMutation(graphene.Mutation):
+    # define the argument type we want to accept and 
+    # then pass this arguments in mutate() function
+    class Arguments:
+        name = graphene.String(required=True)
+        # .. add more fields here as arg
+
+    # define the category type
+    category = graphene.Field(CategoryType)
+
+    # name argument to accept the name passed by frontend
+    # add more arg here which we declared in Arguments
+    @classmethod
+    def mutate(cls, root, info, name):	
+        category = Category(name=name)
+        category.save()
+        return CategoryMutation(category=category)
+
+# to mutate data in server and also rell 
+# frontend that server accept mutation requst
+class Mutation(graphene.ObjectType):
+    update_category = CategoryMutation.Field()
+
+
+# mutation parameter let frontend know that mutation query are 
+# accepted and how the are connected (via Mutation class)
+schema = graphene.Schema(query=Query, mutation=Mutation)
+```
+
+#### Query and Response
+
+Query
+
+```json
+mutation CategoryMutation{
+  updateCategory(name:"NewCategory"){
+    category{
+      name
+    }
+  }
+}
+```
+
+Response
+
+```json
+{
+  "data": {
+    "updateCategory": {
+      "category": {
+        "name": "NewCategory"
+      }
+    }
   }
 }
 ```
