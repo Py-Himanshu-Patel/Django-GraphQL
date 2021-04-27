@@ -179,7 +179,7 @@ Response is also same
 
 #### Make models
 
-[models.py](src/Quiz/models.py)
+[Quiz/models.py](src/Quiz/models.py)
 
 ```python
 # quiz/models.py
@@ -199,7 +199,7 @@ class Answer(models.Model):
 
 #### Make schema
 
-[schema.py](src/Quiz/schema.py)
+[Quiz/schema.py](src/Quiz/schema.py)
 
 ```python
 import graphene
@@ -277,3 +277,118 @@ query{
 ```
 
 We can request only those field which are declared in `QuizzesType` and `QuestionType`.
+
+#### Modify schema to get a single object or a list
+
+```python
+# Quiz/schema.py
+class Query(graphene.ObjectType):
+    # returns all objects in models
+    # all_quizzes = DjangoListField(QuizzesType)
+
+    # get the request quiz or question list
+    get_quiz = graphene.Field(QuizzesType, quiz_id=graphene.Int())
+    get_questions = graphene.List(QuestionType, ques_id=graphene.Int())
+
+    # get_questions is List so need an iterable
+    def resolve_get_questions(root, info, ques_id):
+        # all questions with id > ques_id
+        return Question.objects.filter(pk__gt=ques_id)
+
+    # get_quiz is Field so need a single instance
+    def resolve_get_quiz(root, info, quiz_id):
+        return Quiz.objects.get(pk=quiz_id)
+```
+
+##### Query
+
+```json
+query{
+  getQuiz(quizId:1){
+    title
+  }
+  getQuestions(quesId:2){
+    title
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "data": {
+    "getQuiz": {
+      "title": "First Quiz"
+    },
+    "getQuestions": [
+      {
+        "title": "Is Django the best framework for backend"
+      }
+    ]
+  }
+}
+```
+
+Notice the use of `quizId` and `quesId` in query.
+
+#### Modify schema to get answers related to a particular question
+
+```python
+class Query(graphene.ObjectType):
+    # get the request question and all it's answers
+    get_all_answers = graphene.List(AnswerType, ques_id=graphene.Int())
+    get_question = graphene.Field(QuestionType, ques_id=graphene.Int())
+
+    def resolve_get_question(root, info, ques_id): 
+        return Question.objects.get(pk=ques_id)
+
+    def resolve_get_all_answers(root, info, ques_id):
+        return Answer.objects.filter(question__pk=ques_id)
+```
+
+##### Query
+
+ ```json
+ {
+  getQuestion(quesId: 1) {
+    title
+  }
+  getAllAnswers(quesId: 1) {
+    answerText
+  }
+}
+```
+
+OR using variables
+
+```json
+ query GetQuesAns($id: Int = 1){
+  getQuestion(quesId: $id) {
+    title
+  }
+  getAllAnswers(quesId: $id) {
+    answerText
+  }
+}
+ ```
+
+##### Response
+
+```json
+{
+  "data": {
+    "getQuestion": {
+      "title": "Is Spring the most famous framework?"
+    },
+    "getAllAnswers": [
+      {
+        "answerText": "NO, ofcourse not."
+      },
+      {
+        "answerText": "As usual. It Depends"
+      }
+    ]
+  }
+}
+```

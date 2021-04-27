@@ -1,4 +1,6 @@
+from django.db import models
 import graphene
+from graphene.types.scalars import Int
 from graphene_django import DjangoObjectType, DjangoListField
 from .models import Category, Question, Answer, Quiz
 
@@ -12,7 +14,7 @@ class CategoryType(DjangoObjectType):
 class QuizzesType(DjangoObjectType):
 	class Meta:
 		model = Quiz
-		fields = ('id', 'title', 'category', 'quiz')
+		fields = ('id', 'title', 'category')
 
 
 class QuestionType(DjangoObjectType):
@@ -26,19 +28,17 @@ class AnswerType(DjangoObjectType):
 		model = Answer
 		fields = ('question', 'answer_text')
 
+
 class Query(graphene.ObjectType):
-	# quiz = graphene.String()
-	# def resolve_quiz(root, info):
-	# 	return "Dummy Text"
+	# get the request question and all it's answers
+	get_all_answers = graphene.List(AnswerType, ques_id=graphene.Int())
+	get_question = graphene.Field(QuestionType, ques_id=graphene.Int())
 
-	all_quizzes = DjangoListField(QuizzesType)
-	all_questions = DjangoListField(QuestionType)
+	def resolve_get_question(root, info, ques_id): 
+		return Question.objects.get(pk=ques_id)
 
-	def resolve_all_quizzes(root, info):
-		return Quiz.objects.all()
-
-	def resolve_all_questions(root, info):
-		return Question.objects.all()
+	def resolve_get_all_answers(root, info, ques_id):
+		return Answer.objects.filter(question__pk=ques_id)
 
 
 schema = graphene.Schema(query=Query)
