@@ -1,6 +1,8 @@
 # Django-GraphQL
 
-Using GraphQL in Django. Big Thanks to [Very Academy YouTube Channel - GraphQL playlist](https://www.youtube.com/playlist?list=PLOLrQ9Pn6caxz00JcLeOR-Rtq0Yi01oBH)
+Using GraphQL in Django. Big Thanks to [Very Academy YouTube Channel](https://www.youtube.com/playlist?list=PLOLrQ9Pn6caxz00JcLeOR-Rtq0Yi01oBH)
+
+[Graphene-Django Official Documentation](https://docs.graphene-python.org/projects/django/en/latest/installation/)
 
 ## Commands and Scripts
 
@@ -88,7 +90,7 @@ from MyApp.schema import schema
 
 urlpatterns = [
     # instead of defining schema here we can define a default schema in settings.py
-    path("graphql", GraphQLView.as_view(graphiql=True, schema=schema))
+    path("books/", GraphQLView.as_view(graphiql=True, schema=schema))
 ]
 ```
 
@@ -102,4 +104,73 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('MyApp.urls')),
 ]
+```
+
+### Make a GraphQL query
+
+Visit: [http://127.0.0.1:8000/books/](http://127.0.0.1:8000/books/) And make a graphQL query
+
+```json
+query{
+  allBooks {
+    id
+    title
+  }
+}
+```
+
+The Result
+
+```json
+{
+  "data": {
+    "allBooks": [
+      {
+        "id": "1",
+        "title": "7 Habit of Highly Non Effective People"
+      },
+      {
+        "id": "2",
+        "title": "Django Mens"
+      },
+      {
+        "id": "3",
+        "title": "React Boys"
+      }
+    ]
+  }
+}
+```
+
+### Passing GraphQL query in URL instead of using GUI for query
+
+Make the `graphiql` to `False` and GUI is gone.
+
+```python
+# in App/urls.py
+path("books/", GraphQLView.as_view(graphiql=False, schema=schema))
+```
+
+Now we query using URL as follow
+
+```http
+http://127.0.0.1:8000/books/?query=query{allBooks{id,title}}
+```
+
+Here the prefix is the same URL as previous
+
+```http
+http://127.0.0.1:8000/books/
+```
+
+We just passed query as
+
+```http
+query{allBooks{id,title}}
+```
+
+Response is also same
+
+```json
+{"data":{"allBooks":[{"id":"1","title":"7 Habit of Highly Non Effective People"},{"id":"2","title":"Django Mens"},{"id":"3","title":"React Boys"}]}}
 ```
