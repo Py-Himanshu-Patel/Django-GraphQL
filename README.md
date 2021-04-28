@@ -110,7 +110,7 @@ urlpatterns = [
 
 Visit: [http://127.0.0.1:8000/books/](http://127.0.0.1:8000/books/) And make a graphQL query
 
-```json
+```graphql
 query{
   allBooks {
     id
@@ -240,7 +240,7 @@ schema = graphene.Schema(query=Query)
 
 ##### Query
 
-```json
+```graphql
 query{
   allQuizzes {
     title
@@ -305,7 +305,7 @@ class Query(graphene.ObjectType):
 
 ##### Query
 
-```json
+```graphql
 query{
   getQuiz(quizId:1){
     title
@@ -353,7 +353,7 @@ class Query(graphene.ObjectType):
 
 ##### Query
 
- ```json
+ ```graphql
  {
   getQuestion(quesId: 1) {
     title
@@ -366,7 +366,7 @@ class Query(graphene.ObjectType):
 
 OR using variables
 
-```json
+```graphql
  query GetQuesAns($id: Int = 1){
   getQuestion(quesId: $id) {
     title
@@ -441,7 +441,7 @@ schema = graphene.Schema(query=Query, mutation=Mutation)
 
 Query: Here name we gave to mutation (CategoryMutation) can be anything it's not related to server side coding.
 
-```json
+```graphql
 mutation CategoryMutation{
   updateCategory(name:"NewCategory"){
     category{
@@ -487,7 +487,7 @@ class CategoryMutation(graphene.Mutation):
 
 #### Update Mutation with response
 
-```json
+```graphql
 mutation UpdateCategory{
   updateCategory(id:4, name: "UpdatedCategory"){
     category{
@@ -561,7 +561,7 @@ schema = graphene.Schema(query=Query, mutation=Mutation)
 
 #### Create and Update Mutation with response
 
-```json
+```graphql
 mutation CreateCategory {
   createCategory(name: "LatestCategory") {
     category {
