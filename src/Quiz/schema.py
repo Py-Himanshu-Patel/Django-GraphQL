@@ -73,11 +73,25 @@ class CategoryUpdate(graphene.Mutation):
         category.save()
         return CategoryUpdate(category=category)
 
+# to delete the object from database
+class CategoryDelete(graphene.Mutation):
+    class Arguments:
+        id = graphene.Int()
+
+    category = graphene.Field(CategoryType)
+
+    @classmethod
+    def mutate(cls, root, info, id):
+        category = Category.objects.get(id=id)
+        category.delete()
+
+
 # to mutate data in server and also rell 
 # frontend that server accept mutation requst
 class Mutation(graphene.ObjectType):
     update_category = CategoryUpdate.Field()
     create_category = CategoryCreate.Field()
+    delete_category = CategoryDelete.Field()
 
 
 # mutation parameter let frontend know that mutation query are 

@@ -597,3 +597,44 @@ mutation CreateCategory {
   }
 }
 ```
+
+#### Delete Mutation
+
+```python
+# to delete the object from database
+class CategoryDelete(graphene.Mutation):
+    class Arguments:
+        id = graphene.Int()
+
+    category = graphene.Field(CategoryType)
+
+    @classmethod
+    def mutate(cls, root, info, id):
+        category = Category.objects.get(id=id)
+        category.delete()
+
+class Mutation(graphene.ObjectType):
+    update_category = CategoryUpdate.Field()
+    create_category = CategoryCreate.Field()
+    delete_category = CategoryDelete.Field()
+```
+
+#### Delete Mutation with request and response
+
+```json
+mutation CreateCategory {
+  deleteCategory(id: 11){
+    category{
+      id
+    }
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "deleteCategory": null
+  }
+}
+```
