@@ -379,6 +379,8 @@ OR using variables
 
 ##### Response
 
+Notice the difference in response type. `getQuestion` gives object while `getAllAnswers` gives a list.
+
 ```json
 {
   "data": {
@@ -399,7 +401,7 @@ OR using variables
 
 ### GraphQL CRUD with Django
 
-#### Modify or Create a instance in database
+#### Create an instance in database
 
 Add this class in schema.py.
 
@@ -435,9 +437,9 @@ class Mutation(graphene.ObjectType):
 schema = graphene.Schema(query=Query, mutation=Mutation)
 ```
 
-#### Query and Response
+#### Create Mutation with Response
 
-Query
+Query: Here name we gave to mutation (CategoryMutation) can be anything it's not related to server side coding.
 
 ```json
 mutation CategoryMutation{
@@ -457,6 +459,139 @@ Response
     "updateCategory": {
       "category": {
         "name": "NewCategory"
+      }
+    }
+  }
+}
+```
+
+#### Update an instance in database
+
+Just change the Mutation class as follows and rest all same as previous Mutation. Don't forget to comment out or delete previous class with same name.
+
+```python
+class CategoryMutation(graphene.Mutation):
+    class Arguments:
+        id = graphene.Int()
+        name = graphene.String(required=True)
+
+    category = graphene.Field(CategoryType)
+
+    @classmethod
+    def mutate(cls, root, info, name, id):
+        category = Category.objects.get(id=id)
+        category.name = name
+        category.save()
+        return CategoryMutation(category=category)
+```
+
+#### Update Mutation with response
+
+```json
+mutation UpdateCategory{
+  updateCategory(id:4, name: "UpdatedCategory"){
+    category{
+      id
+      name
+    }
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "updateCategory": {
+      "category": {
+        "id": "4",
+        "name": "UpdatedCategory"
+      }
+    }
+  }
+}
+```
+
+#### Create and Update together
+
+```python
+class CategoryCreate(graphene.Mutation):
+    # define the argument type we want to accept and 
+    # then pass this arguments in mutate() function
+    class Arguments:
+        name = graphene.String(required=True)
+        # .. add more fields here as arg
+
+    # define the category type
+    category = graphene.Field(CategoryType)
+
+    # name argument to accept the name passed by frontend
+    # add more arg here which we declared in Arguments
+    @classmethod
+    def mutate(cls, root, info, name):
+        category = Category(name=name)
+        category.save()
+        return CategoryCreate(category=category)
+
+
+class CategoryUpdate(graphene.Mutation):
+    class Arguments:
+        id = graphene.Int()
+        name = graphene.String(required=True)
+
+    category = graphene.Field(CategoryType)
+
+    @classmethod
+    def mutate(cls, root, info, name, id):
+        category = Category.objects.get(id=id)
+        category.name = name
+        category.save()
+        return CategoryUpdate(category=category)
+
+# to mutate data in server and also rell 
+# frontend that server accept mutation requst
+class Mutation(graphene.ObjectType):
+    update_category = CategoryUpdate.Field()
+    create_category = CategoryCreate.Field()
+
+
+# mutation parameter let frontend know that mutation query are 
+# accepted and how the are connected (via Mutation class)
+schema = graphene.Schema(query=Query, mutation=Mutation)
+```
+
+#### Create and Update Mutation with response
+
+```json
+mutation CreateCategory {
+  createCategory(name: "LatestCategory") {
+    category {
+      id
+      name
+    }
+  }
+
+  updateCategory(id: 5, name: "ModifiedCategory") {
+    category {
+      id
+      name
+    }
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "createCategory": {
+      "category": {
+        "id": "6",
+        "name": "LatestCategory"
+      }
+    },
+    "updateCategory": {
+      "category": {
+        "id": "5",
+        "name": "ModifiedCategory"
       }
     }
   }
