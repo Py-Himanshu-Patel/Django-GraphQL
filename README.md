@@ -153,19 +153,19 @@ path("books/", GraphQLView.as_view(graphiql=False, schema=schema))
 
 Now we query using URL as follow
 
-```http
+```url
 http://127.0.0.1:8000/books/?query=query{allBooks{id,title}}
 ```
 
 Here the prefix is the same URL as previous
 
-```http
+```url
 http://127.0.0.1:8000/books/
 ```
 
 We just passed query as
 
-```http
+```graphql
 query{allBooks{id,title}}
 ```
 
