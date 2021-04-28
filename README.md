@@ -621,7 +621,7 @@ class Mutation(graphene.ObjectType):
 
 #### Delete Mutation with request and response
 
-```json
+```graphql
 mutation CreateCategory {
   deleteCategory(id: 11){
     category{
