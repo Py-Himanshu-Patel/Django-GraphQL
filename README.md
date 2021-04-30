@@ -795,3 +795,88 @@ query{
   }
 }
 ```
+
+Using `me` query
+
+```graphql
+query{
+  me{
+    username
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "me": {
+      "username": "hp"
+    }
+  }
+}
+```
+
+#### Define email backend and user authentication
+
+Instead of sending email using SMTP we send email to console.
+
+```python
+# settings.py
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# JWT config
+GRAPHQL_JWT = {
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_ALLOW_ANY_CLASSES": [
+        "graphql_auth.mutations.Register",
+    ],
+    "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
+}
+```
+
+```python
+# schema.py
+import graphene
+from graphql_auth import mutations
+from graphql_auth.schema import UserQuery, MeQuery
+
+class AuthMutation(graphene.ObjectType):
+    register = mutations.Register.Field()
+
+class Query(UserQuery, MeQuery, graphene.ObjectType):
+    pass
+
+class Mutation(AuthMutation, graphene.ObjectType):
+    pass
+
+schema = graphene.Schema(query=Query, mutation=Mutation)
+```
+
+```graphql
+mutation{
+  register(
+    email: "admin@email.com"
+    username: "admin"
+    password1: "admin@1234"
+    password2: "admin@1234"
+  ){
+    success
+    errors
+    token
+    refreshToken
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "register": {
+      "success": true,
+      "errors": null,
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNjE5ODE5MTg5LCJvcmlnSWF0IjoxNjE5ODE4ODg5fQ.Qvj7GqN5vkkrQLah-g-n06DMZKHg0WkDUCdnx_gxMys",
+      "refreshToken": "da3aba7e87c4796b813765a2b13aad3970aff78d"
+    }
+  }
+}
+```

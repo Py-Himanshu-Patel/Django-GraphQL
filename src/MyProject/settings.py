@@ -150,3 +150,16 @@ AUTHENTICATION_BACKENDS = [
 
 # Cutome User Model
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# define email backend
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+# JWT config
+GRAPHQL_JWT = {
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_ALLOW_ANY_CLASSES": [
+        "graphql_auth.mutations.Register",
+    ],
+    "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
+}
