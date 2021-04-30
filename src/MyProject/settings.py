@@ -40,10 +40,14 @@ INSTALLED_APPS = [
 
     # third party
     'graphene_django',
+    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
+    'graphql_auth',
+    'django_filters',
 
     # local apps
     'MyApp',
     'Quiz',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -131,6 +135,18 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# GRAPHENE = {
-#     'SCHEMA': 'app.schema.schema' # Where your Graphene schema lives
-# }
+GRAPHENE = {
+    'SCHEMA': 'users.schema.schema',
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
+}
+
+AUTHENTICATION_BACKENDS = [
+    # 'graphql_jwt.backends.JSONWebTokenBackend',
+    "graphql_auth.backends.GraphQLAuthBackend",
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Cutome User Model
+AUTH_USER_MODEL = 'users.CustomUser'

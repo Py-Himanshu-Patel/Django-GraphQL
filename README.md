@@ -638,3 +638,160 @@ mutation CreateCategory {
   }
 }
 ```
+
+### User Management with GraphQL
+
+- Login
+- Logout
+- Authenticate
+- Signup Email Confirmation
+- Change Password
+- Forgot password - via email confirm
+- Delete Account
+- Update account details
+
+#### Make custom user
+
+Make new `users` app and include it in INSTALLED_APPS.
+
+```python
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class CustomUser(AbstractUser):
+    # making email field compulsory
+    email = models.EmailField(blank=False, max_length=100, verbose_name="email")
+    USERNAME_FIELD = 'username'
+    EMAIL_FIELD = 'email'
+```
+
+Uncomment the auth model and specify abstract user in settings.
+
+```python
+# settings.py
+
+INSTALLED_APPS = [
+    # 'django.contrib.admin',
+    ...
+]
+
+# Cutome User Model
+AUTH_USER_MODEL = 'users.CustomUser'
+
+```
+
+Run `python manage.py makemigrations` and `python manage.py migrate`. After this uncomment `django.contrib.admin`
+
+#### Setup GraphQL and JWT
+
+[Install Graphene](https://docs.graphene-python.org/projects/django/en/latest/installation/): `pip install graphene-django`
+
+[Install Django Graphene JWT](https://django-graphql-jwt.domake.io/en/latest/quickstart.html#installation): `pip install django-graphql-jwt`
+
+[Install Django GraphQL Auth](https://pypi.org/project/django-graphql-auth/) `pip install django-graphql-auth`
+
+Modify `settings.py` as
+
+```python
+INSTALLED_APPS = [
+    ...
+    # third party
+    'graphene_django',
+    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
+    'graphql_auth',
+    # local apps
+    'users',
+]
+
+GRAPHENE = {
+    'SCHEMA': 'users.schema.schema',
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
+}
+
+AUTHENTICATION_BACKENDS = [
+    # 'graphql_jwt.backends.JSONWebTokenBackend',
+    "graphql_auth.backends.GraphQLAuthBackend",
+    'django.contrib.auth.backends.ModelBackend',
+]
+```
+
+Run **makemigrations** and **migrate**.
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+#### Setup django for JWT
+
+```python
+# users/admin.py
+
+from django.apps import apps
+# get some specific app
+app = apps.get_app_config('graphql_auth')
+for model_name, model in app.models.items():
+    admin.site.register(model)
+```
+
+```python
+# Project/urls.py
+...
+from graphene_django.views import GraphQLView
+from django.views.decorators.csrf import csrf_exempt
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    ...
+    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True)) )
+]
+
+```
+
+#### Setup Schema for GraphQL
+
+Create a `schema.py` file in users app.
+
+```python
+# users/schema.py
+import graphene
+from graphene.types import schema
+from graphql_auth.schema import UserQuery, MeQuery
+
+class Query(UserQuery, MeQuery, graphene.ObjectType):
+    pass
+
+schema = graphene.Schema(query=Query)
+```
+
+#### Go and make a query
+
+```graphql
+query{
+  users{
+    edges{
+      node{
+        username
+      }
+    }
+  } 
+}
+```
+
+```json
+{
+  "data": {
+    "users": {
+      "edges": [
+        {
+          "node": {
+            "username": "hp"
+          }
+        }
+      ]
+    }
+  }
+}
+```
