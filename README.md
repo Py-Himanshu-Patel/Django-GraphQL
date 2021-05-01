@@ -1003,3 +1003,92 @@ mutation{
 This is also use full when we want to request some data as if the user is logged in.
 Then pass the user creadentials and `user{}` query with `user details` we required.
 
+#### Modify user and pass JWT token
+
+Using header of GraphQL UI I could not find any way to pass JWT token in POST request. So I used Postman.
+
+Making this request to update `username` of user.
+
+```graphql
+mutation{
+  updateAccount(firstName: "HP"){
+    success
+    errors
+  }
+}
+```
+
+This gives a response
+
+```json
+{
+  "errors": [
+    {
+      "message": "CustomUser has no status.",
+      "locations": [
+        {
+          "line": 2,
+          "column": 3
+        }
+      ],
+      "path": [
+        "updateAccount"
+      ]
+    }
+  ],
+  "data": {
+    "updateAccount": null
+  }
+}
+```
+
+This do not updated the either the loggined user or user whose JWT we are trying to pass anyway.
+
+Make a Post request using Postman without passing `authentication` in header.
+
+```graphql
+mutation{
+  updateAccount(firstName: "ADMIN"){
+    success
+    errors
+  }
+}
+```
+
+Response
+
+```json
+{
+    "data": {
+        "updateAccount": {
+            "success": false,
+            "errors": {
+                "nonFieldErrors": [
+                    {
+                        "message": "Unauthenticated.",
+                        "code": "unauthenticated"
+                    }
+                ]
+            }
+        }
+    }
+}
+```
+
+Now pass the JWT of `admin` custom user we made.
+
+Authorization: OAuth2.0 with `JWT <jwt-token-here>`
+
+```json
+{
+    "data": {
+        "updateAccount": {
+            "success": true,
+            "errors": null
+        }
+    }
+}
+```
+
+This updated the first name of the user whose JWT we given.
+
