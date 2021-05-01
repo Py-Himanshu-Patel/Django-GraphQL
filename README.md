@@ -4,6 +4,8 @@ Using GraphQL in Django. Big Thanks to [Very Academy YouTube Channel](https://ww
 
 [Graphene-Django Official Documentation](https://docs.graphene-python.org/projects/django/en/latest/installation/)
 
+***
+
 ## Commands and Scripts
 
 ### Setup Virtual Environment
@@ -20,6 +22,8 @@ To install the Pipfile
 ```bash
 pipenv install
 ```
+
+***
 
 ### Get graphene
 
@@ -174,6 +178,8 @@ Response is also same
 ```json
 {"data":{"allBooks":[{"id":"1","title":"7 Habit of Highly Non Effective People"},{"id":"2","title":"Django Mens"},{"id":"3","title":"React Boys"}]}}
 ```
+
+***
 
 ### Making even more comples queries
 
@@ -398,6 +404,8 @@ Notice the difference in response type. `getQuestion` gives object while `getAll
   }
 }
 ```
+
+***
 
 ### GraphQL CRUD with Django
 
@@ -638,6 +646,8 @@ mutation CreateCategory {
   }
 }
 ```
+
+***
 
 ### User Management with GraphQL
 
