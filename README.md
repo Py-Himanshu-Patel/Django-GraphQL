@@ -880,3 +880,126 @@ mutation{
   }
 }
 ```
+
+The user registered here have received an email. To verifiy user click of the link provided in email. Here we receive it inside console. Or verify the user from admin panel. Goto `User Status` table and check `Verified` status for user.
+
+Also if email is lost or not delivered resend email using this setting
+
+```python
+GRAPHQL_JWT = {
+    ...
+    "JWT_ALLOW_ANY_CLASSES": [
+        "graphql_auth.mutations.Register",
+        "graphql_auth.mutations.VerifyAccount",
+        "graphql_auth.mutations.ResendActivationEmail",
+      ...
+}
+```
+
+```python
+class AuthMutation(graphene.ObjectType):
+    register = mutations.Register.Field()
+    verify_account = mutations.VerifyAccount.Field()
+    resend_activation_email = mutations.ResendActivationEmail.Field()
+    token_auth = mutations.ObtainJSONWebToken.Field()
+```
+
+Make a query to resend email.
+
+```graphql
+mutation{
+  resendActivationEmail(email: "admin@email.com") {
+    success
+    errors
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "resendActivationEmail": {
+      "success": true,
+      "errors": null
+    }
+  }
+}
+```
+
+Pick up the activation code from email
+
+```html
+<h3>127.0.0.1:8000</h3>
+
+<p>Hello admin!</p>
+
+<p>Please activate your account on the link:</p>
+
+<p>http://127.0.0.1:8000/activate/eyJ1c2VybmFtZSI6ImFkbWluIiwiYWN0aW9uIjoiYWN0aXZhdGlvbiJ9:1lchYb:oZPH7xZajyJJ9t2SvIyGTLnzHlxLz70lNnfMUFx-qVc</p>
+```
+
+copy code: `eyJ1c2VybmFtZSI6ImFkbWluIiwiYWN0aW9uIjoiYWN0aXZhdGlvbiJ9:1lchYb:oZPH7xZajyJJ9t2SvIyGTLnzHlxLz70lNnfMUFx-qVc`
+
+Now verify account using 
+
+```graphql
+mutation{
+  verifyAccount(
+    token: "eyJ1c2VybmFtZSI6ImFkbWluIiwiYWN0aW9uIjoiYWN0aXZhdGlvbiJ9:1lchYb:oZPH7xZajyJJ9t2SvIyGTLnzHlxLz70lNnfMUFx-qVc"
+  ) {
+    success
+    errors
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "verifyAccount": {
+      "success": true,
+      "errors": null
+    }
+  }
+}
+```
+
+Also try to login using the verified user.
+
+```graphql
+mutation{
+  tokenAuth(username: "admin", password: "admin@1234"){
+    success
+    errors
+    token
+    refreshToken
+    user {
+      id
+      username
+      email
+    }
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "tokenAuth": {
+      "success": true,
+      "errors": null,
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNjE5ODUzNDA3LCJvcmlnSWF0IjoxNjE5ODUzMTA3fQ.3Iw8iG5bxsNbsFgfKEGIfm81bUZo3OD5AO28XnhVboc",
+      "refreshToken": "16962e695560333389441a0fdab49e7d1b9fba36",
+      "user": {
+        "id": "VXNlck5vZGU6NQ==",
+        "username": "admin",
+        "email": "admin@email.com"
+      }
+    }
+  }
+}
+```
+
+This is also use full when we want to request some data as if the user is logged in.
+Then pass the user creadentials and `user{}` query with `user details` we required.
+

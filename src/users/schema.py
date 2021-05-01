@@ -5,6 +5,9 @@ from graphql_auth.schema import UserQuery, MeQuery
 
 class AuthMutation(graphene.ObjectType):
 	register = mutations.Register.Field()
+	verify_account = mutations.VerifyAccount.Field()
+	resend_activation_email = mutations.ResendActivationEmail.Field()
+	token_auth = mutations.ObtainJSONWebToken.Field()
 
 
 class Query(UserQuery, MeQuery, graphene.ObjectType):
