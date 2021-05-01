@@ -892,7 +892,10 @@ GRAPHQL_JWT = {
         "graphql_auth.mutations.Register",
         "graphql_auth.mutations.VerifyAccount",
         "graphql_auth.mutations.ResendActivationEmail",
-      ...
+        "graphql_auth.mutations.ObtainJSONWebToken",
+        "graphql_auth.mutations.SendPasswordResetEmail",
+    ],
+    ...
 }
 ```
 
@@ -902,6 +905,7 @@ class AuthMutation(graphene.ObjectType):
     verify_account = mutations.VerifyAccount.Field()
     resend_activation_email = mutations.ResendActivationEmail.Field()
     token_auth = mutations.ObtainJSONWebToken.Field()
+    update_account = mutations.UpdateAccount.Field()
 ```
 
 Make a query to resend email.
@@ -1092,3 +1096,90 @@ Authorization: OAuth2.0 with `JWT <jwt-token-here>`
 
 This updated the first name of the user whose JWT we given.
 
+#### Password reset email
+
+```python
+# settings.py
+GRAPHQL_JWT = {
+  ...
+    "JWT_ALLOW_ANY_CLASSES": [
+        "graphql_auth.mutations.Register",
+        "graphql_auth.mutations.VerifyAccount",
+        "graphql_auth.mutations.ResendActivationEmail",
+        "graphql_auth.mutations.ObtainJSONWebToken",
+        "graphql_auth.mutations.SendPasswordResetEmail",
+    ],
+  ...
+}
+```
+
+```python
+# schema.py
+class AuthMutation(graphene.ObjectType):
+  register = mutations.Register.Field()
+  verify_account = mutations.VerifyAccount.Field()
+  resend_activation_email = mutations.ResendActivationEmail.Field()
+  token_auth = mutations.ObtainJSONWebToken.Field()
+  update_account = mutations.UpdateAccount.Field()
+  send_password_reset_email = mutations.SendPasswordResetEmail.Field()
+  password_reset = mutations.PasswordReset.Field()
+```
+
+```graphql
+mutation{
+   sendPasswordResetEmail(email: "admin@email.com"){
+    success
+    errors
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "sendPasswordResetEmail": {
+      "success": true,
+      "errors": null
+    }
+  }
+}
+```
+
+Pick up the password reset link
+
+```html
+<h3>127.0.0.1:8000</h3>
+
+<p>Hello admin!</p>
+
+<p>Reset your password on the link:</p>
+
+<p>http://127.0.0.1:8000/password-reset/eyJ1c2VybmFtZSI6ImFkbWluIiwiYWN0aW9uIjoicGFzc3dvcmRfcmVzZXQifQ:1lcmcv:9bYIJAWdTCiXKAWxbNS2lHl9FzIw1PGUq_gpq-__Z-4</p>
+```
+
+Reset token `eyJ1c2VybmFtZSI6ImFkbWluIiwiYWN0aW9uIjoicGFzc3dvcmRfcmVzZXQifQ:1lcmcv:9bYIJAWdTCiXKAWxbNS2lHl9FzIw1PGUq_gpq-__Z-4`
+
+```graphql
+mutation{
+  passwordReset(token: "eyJ1c2VybmFtZSI6ImFkbWluIiwiYWN0aW9uIjoicGFzc3dvcmRfcmVzZXQifQ:1lcmcv:9bYIJAWdTCiXKAWxbNS2lHl9FzIw1PGUq_gpq-__Z-4"
+  , newPassword1: "admin@4321"
+  , newPassword2: "admin@4321"  
+  ){
+    success
+    errors
+  }
+} 
+```
+
+```python
+{
+  "data": {
+    "passwordReset": {
+      "success": true,
+      "errors": null
+    }
+  }
+}
+```
+
+Password reset successful.
